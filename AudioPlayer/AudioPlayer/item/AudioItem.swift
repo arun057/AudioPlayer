@@ -86,12 +86,15 @@ open class AudioItem: NSObject {
         }
         self.init(soundURLs: URLs)
     }
+    
+    public let data: AVAsset?
 
     /// Initializes an `AudioItem`.
     ///
     /// - Parameter soundURLs: The URLs of the sound associated with its quality wrapped in a `Dictionary`.
     public init?(soundURLs: [AudioQuality: URL]) {
         self.soundURLs = soundURLs
+        self.data = nil
         super.init()
 
         if soundURLs.isEmpty {

@@ -113,7 +113,30 @@ public class AudioPlayer: NSObject {
                 }
 
                 //Creates new player
-                player = AVPlayer(playerItem: playerItem)
+                if currentItem.data != nil {
+                    player = AVPlayer(playerItem: AVPlayerItem(asset: currentItem.data!))
+                    
+                    if let currentItemDuration = currentItemDuration, currentItemDuration > 0 {
+                        updateNowPlayingInfoCenter()
+                        delegate?.audioPlayer(self, didFindDuration: currentItemDuration, forItem: currentItem)
+                    }
+                }
+                else {
+                    player = AVPlayer(playerItem: playerItem)
+                }
+                
+                let nextIndex = currentItemIndexInQueue! + 1
+                if (enqueuedItems?.count)! > nextIndex {
+                    let temp = enqueuedItems![currentItemIndexInQueue!+1].item
+                    if temp.data == nil {
+                        preload(temp, index: nextIndex)
+                    }
+                }
+                else if enqueuedItems![0].item.data == nil {
+                    preload(enqueuedItems![0].item,index: 0)
+                }
+
+                
                 
                 currentQuality = info.quality
 
@@ -127,6 +150,25 @@ public class AudioPlayer: NSObject {
                 player?.rate = rate
             } else {
                 stop()
+            }
+        }
+    }
+    
+    func preload(song: AudioItem, index: Int) {
+        let asset = AVURLAsset(URL: song.highestQualityURL.URL)
+        let keys = ["playable","tracks","duration"]
+        
+        asset.loadValuesAsynchronouslyForKeys(keys) {
+            for key in keys {
+                let status = asset.statusOfValueForKey(key, error: nil)
+                if status == AVKeyValueStatus.Failed {
+                    return
+                }
+            }
+            
+            dispatch_async(dispatch_get_main_queue()) {
+                song.data = asset
+                self.enqueuedItems?[index].item = song
             }
         }
     }
