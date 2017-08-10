@@ -26,10 +26,10 @@ private extension Array {
 /// `AudioItemQueue` handles queueing items with a playing mode.
 class AudioItemQueue {
     /// The original items, keeping the same order.
-    private(set) var items: [AudioItem]
+    public var items: [AudioItem]
 
     /// The items stored in the way the mode requires.
-    private(set) var queue: [AudioItem]
+    public var queue: [AudioItem]
 
     /// The historic of items played in the queue.
     private(set) var historic: [AudioItem]
@@ -172,6 +172,11 @@ class AudioItemQueue {
     func add(items: [AudioItem]) {
         self.items.append(contentsOf: items)
         self.queue.append(contentsOf: items)
+    }
+    
+    func insertItem(item: AudioItem, index: Int) {
+        self.items.insert(item, at: index)
+        self.queue.insert(item, at: index)
     }
 
     /// Removes an item from the queue.

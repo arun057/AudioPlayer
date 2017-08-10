@@ -118,7 +118,7 @@ public class AudioPlayer: NSObject {
                     
                     if let currentItemDuration = currentItemDuration, currentItemDuration > 0 {
                         updateNowPlayingInfoCenter()
-                        delegate?.audioPlayer(self, didFindDuration: currentItemDuration, forItem: currentItem)
+                        delegate?.audioPlayer(self, didFindDuration: currentItemDuration, for: currentItem)
                     }
                 }
                 else {
@@ -126,14 +126,14 @@ public class AudioPlayer: NSObject {
                 }
                 
                 let nextIndex = currentItemIndexInQueue! + 1
-                if (enqueuedItems?.count)! > nextIndex {
-                    let temp = enqueuedItems![currentItemIndexInQueue!+1].item
+                if (items?.count)! > nextIndex {
+                    let temp = items![currentItemIndexInQueue!+1]
                     if temp.data == nil {
-                        preload(temp, index: nextIndex)
+                        preload(song: temp, index: nextIndex)
                     }
                 }
-                else if enqueuedItems![0].item.data == nil {
-                    preload(enqueuedItems![0].item,index: 0)
+                else if items![0].data == nil {
+                    preload(song: items![0],index: 0)
                 }
 
                 
@@ -155,20 +155,21 @@ public class AudioPlayer: NSObject {
     }
     
     func preload(song: AudioItem, index: Int) {
-        let asset = AVURLAsset(URL: song.highestQualityURL.URL)
+        let asset = AVURLAsset(url: song.highestQualityURL.url)
         let keys = ["playable","tracks","duration"]
         
-        asset.loadValuesAsynchronouslyForKeys(keys) {
+        asset.loadValuesAsynchronously(forKeys: keys) { 
             for key in keys {
-                let status = asset.statusOfValueForKey(key, error: nil)
-                if status == AVKeyValueStatus.Failed {
+                let status = asset.statusOfValue(forKey: key, error: nil)
+                if status == AVKeyValueStatus.failed {
                     return
                 }
             }
             
-            dispatch_async(dispatch_get_main_queue()) {
+            DispatchQueue.main.async() {
                 song.data = asset
-                self.enqueuedItems?[index].item = song
+                self.queue?.insertItem(item: song, index: index)
+//                self.items?.insert(song, at: index)
             }
         }
     }

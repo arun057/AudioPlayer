@@ -87,7 +87,7 @@ open class AudioItem: NSObject {
         self.init(soundURLs: URLs)
     }
     
-    public let data: AVAsset?
+    public var data: AVAsset?
 
     /// Initializes an `AudioItem`.
     ///
